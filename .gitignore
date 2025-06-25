@@ -1,0 +1,54 @@
+# Docker
+.dockerignore
+docker-compose.override.yml
+.env
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+*.out
+
+# Temporary files
+*.tmp
+*.temp
+*.backup
+*.bak
+
+# Build artifacts
+*.tar.gz
+*.tgz
+*.zip
+
+# Local configuration overrides
+config/local/
+local-*.yml
+local-*.xml
+
+# Hadoop runtime files (if running locally)
+hadoop-logs/
+hdfs-data/
+
+# Documentation build
+docs/_build/
+site/
+
+# Backup files
+*~
+.#*
+#*#

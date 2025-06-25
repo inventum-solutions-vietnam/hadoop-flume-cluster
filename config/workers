@@ -1,0 +1,6 @@
+# Hadoop Worker Nodes Configuration
+# List the hostnames of all worker nodes in the cluster
+# One hostname per line
+
+hadoop-slave1
+hadoop-slave2 

@@ -1,0 +1,113 @@
+services:
+  hadoop-master:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hadoop-master
+    hostname: hadoop-master
+    ports:
+      - "9000:9000"   # NameNode IPC
+      - "9870:9870"   # NameNode Web UI  
+      - "8088:8088"   # ResourceManager Web UI
+
+    volumes:
+      - hadoop-master-data:/root/hdfs/namenode
+      - hadoop-logs:/usr/local/hadoop/logs
+    networks:
+      - hadoop-cluster
+    environment:
+      - CLUSTER_NAME=hadoop-cluster
+    healthcheck:
+      test: ["CMD", "pgrep", "sshd"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  hadoop-slave1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hadoop-slave1
+    hostname: hadoop-slave1
+    depends_on:
+      hadoop-master:
+        condition: service_healthy
+    ports:
+      - "8042:8042"   # NodeManager Web UI
+    volumes:
+      - hadoop-slave1-data:/root/hdfs/datanode
+    networks:
+      - hadoop-cluster
+    environment:
+      - CLUSTER_NAME=hadoop-cluster
+
+  hadoop-slave2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hadoop-slave2
+    hostname: hadoop-slave2
+    depends_on:
+      hadoop-master:
+        condition: service_healthy
+    ports:
+      - "8043:8042"   # NodeManager Web UI (different host port)
+    volumes:
+      - hadoop-slave2-data:/root/hdfs/datanode
+    networks:
+      - hadoop-cluster
+    environment:
+      - CLUSTER_NAME=hadoop-cluster
+
+  flume-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: flume-agent
+    hostname: flume-agent
+    depends_on:
+      hadoop-master:
+        condition: service_healthy
+    ports:
+      - "44444:44444"   # Flume HTTP source port
+    volumes:
+      - flume-logs:/usr/local/flume/logs
+    networks:
+      - hadoop-cluster
+    environment:
+      - CLUSTER_NAME=hadoop-cluster
+    command: ["/bin/bash", "-c", "~/start-flume.sh"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:44444"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  hadoop-master-data:
+    driver: local
+    name: hadoop-master-data
+  hadoop-slave1-data:
+    driver: local
+    name: hadoop-slave1-data
+  hadoop-slave2-data:
+    driver: local
+    name: hadoop-slave2-data
+  hadoop-logs:
+    driver: local
+    name: hadoop-logs
+  flume-logs:
+    driver: local
+    name: flume-logs
+
+networks:
+  hadoop-cluster:
+    driver: bridge
+    name: hadoop-cluster
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.21.0.0/16
+          gateway: 172.21.0.1 
