@@ -51,6 +51,7 @@
 
         .form-group {
             margin-bottom: 25px;
+            position: relative;
         }
 
         label {
@@ -78,9 +79,28 @@
             box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
         }
 
+        input.error, textarea.error, select.error {
+            border-color: #dc3545;
+            background: #fff5f5;
+        }
+
         textarea {
             resize: vertical;
             min-height: 100px;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.85rem;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .field-stats {
+            font-size: 0.75rem;
+            color: #6c757d;
+            margin-top: 5px;
+            display: none;
         }
 
         .button-group {
@@ -216,6 +236,43 @@
         .health-indicator.unknown {
             background: #ffc107;
         }
+
+        .interaction-stats {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+
+        .interaction-stats h4 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 8px;
+            border-radius: 5px;
+            border-left: 3px solid #4facfe;
+        }
+
+        .stat-label {
+            font-weight: 600;
+            color: #666;
+            font-size: 0.8rem;
+        }
+
+        .stat-value {
+            color: #333;
+            font-size: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -229,17 +286,21 @@
             <form id="userForm">
                 <div class="form-group">
                     <label for="name">Full Name *</label>
-                    <input type="text" id="name" name="name" required>
+                    <input type="text" id="name" name="name" required data-field="name">
+                    <div class="error-message" id="name-error"></div>
+                    <div class="field-stats" id="name-stats"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="email">Email Address *</label>
-                    <input type="email" id="email" name="email" required>
+                    <input type="email" id="email" name="email" required data-field="email">
+                    <div class="error-message" id="email-error"></div>
+                    <div class="field-stats" id="email-stats"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="action">Action Type *</label>
-                    <select id="action" name="action" required>
+                    <select id="action" name="action" required data-field="action">
                         <option value="">Select an action...</option>
                         <option value="form_submit">Form Submission</option>
                         <option value="button_click">Button Click</option>
@@ -248,21 +309,27 @@
                         <option value="file_upload">File Upload</option>
                         <option value="other">Other</option>
                     </select>
+                    <div class="error-message" id="action-error"></div>
+                    <div class="field-stats" id="action-stats"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="message">Message/Description</label>
-                    <textarea id="message" name="message" placeholder="Describe what you're doing..."></textarea>
+                    <textarea id="message" name="message" placeholder="Describe what you're doing..." data-field="message"></textarea>
+                    <div class="error-message" id="message-error"></div>
+                    <div class="field-stats" id="message-stats"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="priority">Priority Level</label>
-                    <select id="priority" name="priority">
+                    <select id="priority" name="priority" data-field="priority">
                         <option value="low">Low</option>
                         <option value="medium" selected>Medium</option>
                         <option value="high">High</option>
                         <option value="critical">Critical</option>
                     </select>
+                    <div class="error-message" id="priority-error"></div>
+                    <div class="field-stats" id="priority-stats"></div>
                 </div>
 
                 <div class="button-group">
@@ -283,6 +350,28 @@
 
             <div id="status" class="status"></div>
 
+            <div class="interaction-stats">
+                <h4>📈 Interaction Statistics</h4>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-label">Total Interactions</div>
+                        <div class="stat-value" id="total-interactions">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Time on Page</div>
+                        <div class="stat-value" id="time-on-page">0s</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Validation Errors</div>
+                        <div class="stat-value" id="validation-errors">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Focus Events</div>
+                        <div class="stat-value" id="focus-events">0</div>
+                    </div>
+                </div>
+            </div>
+
             <div class="health-status">
                 <h3>🔍 System Health</h3>
                 <div id="healthInfo">
@@ -294,6 +383,308 @@
     </div>
 
     <script>
+        // User interaction tracking
+        class InteractionTracker {
+            constructor() {
+                this.sessionId = this.generateSessionId();
+                this.startTime = Date.now();
+                this.interactionCount = 0;
+                this.validationErrors = 0;
+                this.focusEvents = 0;
+                this.fieldTimers = new Map();
+                this.fieldStartTimes = new Map();
+                this.pageLoadTime = Date.now();
+                
+                this.initializeTracking();
+                this.startTimeTracking();
+            }
+
+            generateSessionId() {
+                return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            }
+
+            initializeTracking() {
+                // Track form interactions
+                this.trackFormInteractions();
+                
+                // Track input field interactions
+                this.trackInputInteractions();
+                
+                // Track validation events
+                this.trackValidationEvents();
+                
+                // Track focus/blur events
+                this.trackFocusEvents();
+                
+                // Track mouse movements and clicks
+                this.trackMouseEvents();
+                
+                // Track keyboard events
+                this.trackKeyboardEvents();
+                
+                // Track page visibility changes
+                this.trackPageVisibility();
+            }
+
+            trackFormInteractions() {
+                const form = document.getElementById('userForm');
+                
+                // Form focus
+                form.addEventListener('focusin', (e) => {
+                    this.logInteraction('form_focus', {
+                        field: e.target.name || e.target.id,
+                        fieldType: e.target.type || 'unknown'
+                    });
+                });
+
+                // Form submission attempt
+                form.addEventListener('submit', (e) => {
+                    this.logInteraction('form_submit_attempt', {
+                        formValid: form.checkValidity(),
+                        fieldCount: form.elements.length
+                    });
+                });
+            }
+
+            trackInputInteractions() {
+                const inputs = document.querySelectorAll('input, textarea, select');
+                
+                inputs.forEach(input => {
+                    const fieldName = input.name || input.id;
+                    
+                    // Input start
+                    input.addEventListener('input', (e) => {
+                        if (!this.fieldStartTimes.has(fieldName)) {
+                            this.fieldStartTimes.set(fieldName, Date.now());
+                            this.logInteraction('input_start', {
+                                field: fieldName,
+                                fieldType: input.type || 'text'
+                            });
+                        }
+                    });
+
+                    // Input change
+                    input.addEventListener('change', (e) => {
+                        const startTime = this.fieldStartTimes.get(fieldName);
+                        const timeSpent = startTime ? Date.now() - startTime : 0;
+                        
+                        this.logInteraction('input_change', {
+                            field: fieldName,
+                            fieldType: input.type || 'text',
+                            valueLength: input.value.length,
+                            timeSpent: timeSpent,
+                            hasValue: input.value.length > 0
+                        });
+                        
+                        this.fieldStartTimes.delete(fieldName);
+                    });
+
+                    // Input paste
+                    input.addEventListener('paste', (e) => {
+                        this.logInteraction('input_paste', {
+                            field: fieldName,
+                            fieldType: input.type || 'text'
+                        });
+                    });
+
+                    // Input copy
+                    input.addEventListener('copy', (e) => {
+                        this.logInteraction('input_copy', {
+                            field: fieldName,
+                            fieldType: input.type || 'text'
+                        });
+                    });
+                });
+            }
+
+            trackValidationEvents() {
+                const inputs = document.querySelectorAll('input, textarea, select');
+                
+                inputs.forEach(input => {
+                    const fieldName = input.name || input.id;
+                    
+                    // Invalid input
+                    input.addEventListener('invalid', (e) => {
+                        e.preventDefault();
+                        this.validationErrors++;
+                        this.updateStats();
+                        
+                        this.logInteraction('validation_error', {
+                            field: fieldName,
+                            fieldType: input.type || 'text',
+                            errorType: 'invalid',
+                            value: input.value
+                        });
+                    });
+
+                    // Input validation
+                    input.addEventListener('blur', (e) => {
+                        if (!input.checkValidity()) {
+                            this.validationErrors++;
+                            this.updateStats();
+                            
+                            this.logInteraction('validation_failed', {
+                                field: fieldName,
+                                fieldType: input.type || 'text',
+                                value: input.value,
+                                validityState: {
+                                    valueMissing: input.validity.valueMissing,
+                                    typeMismatch: input.validity.typeMismatch,
+                                    patternMismatch: input.validity.patternMismatch,
+                                    tooLong: input.validity.tooLong,
+                                    tooShort: input.validity.tooShort
+                                }
+                            });
+                        }
+                    });
+                });
+            }
+
+            trackFocusEvents() {
+                const inputs = document.querySelectorAll('input, textarea, select');
+                
+                inputs.forEach(input => {
+                    const fieldName = input.name || input.id;
+                    
+                    // Focus in
+                    input.addEventListener('focus', (e) => {
+                        this.focusEvents++;
+                        this.updateStats();
+                        
+                        this.logInteraction('field_focus', {
+                            field: fieldName,
+                            fieldType: input.type || 'text',
+                            hasValue: input.value.length > 0
+                        });
+                    });
+
+                    // Focus out
+                    input.addEventListener('blur', (e) => {
+                        const startTime = this.fieldStartTimes.get(fieldName);
+                        const timeSpent = startTime ? Date.now() - startTime : 0;
+                        
+                        this.logInteraction('field_blur', {
+                            field: fieldName,
+                            fieldType: input.type || 'text',
+                            timeSpent: timeSpent,
+                            hasValue: input.value.length > 0,
+                            isValid: input.checkValidity()
+                        });
+                    });
+                });
+            }
+
+            trackMouseEvents() {
+                // Mouse movements (throttled)
+                let mouseMoveTimeout;
+                document.addEventListener('mousemove', (e) => {
+                    if (mouseMoveTimeout) return;
+                    
+                    mouseMoveTimeout = setTimeout(() => {
+                        this.logInteraction('mouse_movement', {
+                            x: e.clientX,
+                            y: e.clientY,
+                            target: e.target.tagName || 'unknown'
+                        });
+                        mouseMoveTimeout = null;
+                    }, 1000); // Throttle to once per second
+                });
+
+                // Clicks
+                document.addEventListener('click', (e) => {
+                    this.logInteraction('click', {
+                        x: e.clientX,
+                        y: e.clientY,
+                        target: e.target.tagName || 'unknown',
+                        targetId: e.target.id || 'none',
+                        targetClass: e.target.className || 'none'
+                    });
+                });
+            }
+
+            trackKeyboardEvents() {
+                // Key presses (throttled)
+                let keyPressTimeout;
+                document.addEventListener('keydown', (e) => {
+                    if (keyPressTimeout) return;
+                    
+                    keyPressTimeout = setTimeout(() => {
+                        this.logInteraction('key_press', {
+                            key: e.key,
+                            keyCode: e.keyCode,
+                            ctrlKey: e.ctrlKey,
+                            shiftKey: e.shiftKey,
+                            altKey: e.altKey,
+                            target: e.target.tagName || 'unknown'
+                        });
+                        keyPressTimeout = null;
+                    }, 500); // Throttle to once per 500ms
+                });
+            }
+
+            trackPageVisibility() {
+                document.addEventListener('visibilitychange', () => {
+                    this.logInteraction('page_visibility_change', {
+                        hidden: document.hidden,
+                        visibilityState: document.visibilityState
+                    });
+                });
+            }
+
+            startTimeTracking() {
+                setInterval(() => {
+                    const timeOnPage = Math.floor((Date.now() - this.pageLoadTime) / 1000);
+                    document.getElementById('time-on-page').textContent = timeOnPage + 's';
+                }, 1000);
+            }
+
+            logInteraction(eventType, data) {
+                this.interactionCount++;
+                this.updateStats();
+                
+                const interactionData = {
+                    eventType,
+                    timestamp: new Date().toISOString(),
+                    sessionId: this.sessionId,
+                    pageUrl: window.location.href,
+                    userAgent: navigator.userAgent,
+                    timeOnPage: Date.now() - this.pageLoadTime,
+                    interactionCount: this.interactionCount,
+                    ...data
+                };
+
+                // Send to Flume agent
+                this.sendToFlume(interactionData, 'user_interaction');
+            }
+
+            async sendToFlume(data, eventType = 'user_interaction') {
+                try {
+                    const response = await fetch('/api/interaction', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    
+                    if (!response.ok) {
+                        console.warn('Failed to send interaction to Flume:', response.status);
+                    }
+                } catch (error) {
+                    console.warn('Error sending interaction to Flume:', error);
+                }
+            }
+
+            updateStats() {
+                document.getElementById('total-interactions').textContent = this.interactionCount;
+                document.getElementById('validation-errors').textContent = this.validationErrors;
+                document.getElementById('focus-events').textContent = this.focusEvents;
+            }
+        }
+
+        // Initialize interaction tracker
+        const tracker = new InteractionTracker();
+
         // Add user agent and timestamp to form data
         function enrichFormData(formData) {
             const data = {};
@@ -304,16 +695,11 @@
             data.userAgent = navigator.userAgent;
             data.timestamp = new Date().toISOString();
             data.pageUrl = window.location.href;
-            data.sessionId = sessionStorage.getItem('sessionId') || generateSessionId();
-            
-            // Store session ID for future requests
-            sessionStorage.setItem('sessionId', data.sessionId);
+            data.sessionId = tracker.sessionId;
+            data.interactionCount = tracker.interactionCount;
+            data.timeOnPage = Date.now() - tracker.pageLoadTime;
             
             return data;
-        }
-
-        function generateSessionId() {
-            return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         }
 
         function showStatus(message, type = 'info') {

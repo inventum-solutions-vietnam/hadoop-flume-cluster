@@ -75,8 +75,28 @@ app.post('/api/submit', async (c) => {
   try {
     const body = await c.req.json();
     
-    // Log the user interaction
-    const logResult = await sendToFlume(body, 'user_interaction');
+    // Check if this is an interaction tracking event
+    if (body.name === 'Interaction Tracker' && body.interactionData) {
+      // This is a user interaction event from the tracker
+      const logResult = await sendToFlume(body.interactionData, 'user_interaction');
+      
+      if (logResult.success) {
+        return c.json({ 
+          success: true, 
+          message: 'User interaction logged to Flume',
+          timestamp: new Date().toISOString()
+        });
+      } else {
+        return c.json({ 
+          success: false, 
+          message: 'Failed to log user interaction to Flume',
+          error: logResult.error 
+        }, 500);
+      }
+    }
+    
+    // Regular form submission
+    const logResult = await sendToFlume(body, 'form_submission');
     
     if (logResult.success) {
       return c.json({ 
@@ -96,6 +116,37 @@ app.post('/api/submit', async (c) => {
     return c.json({ 
       success: false, 
       message: 'Error processing form submission',
+      error: error.message 
+    }, 500);
+  }
+});
+
+// Dedicated endpoint for user interactions
+app.post('/api/interaction', async (c) => {
+  try {
+    const body = await c.req.json();
+    
+    // Send user interaction to Flume
+    const logResult = await sendToFlume(body, 'user_interaction');
+    
+    if (logResult.success) {
+      return c.json({ 
+        success: true, 
+        message: 'User interaction logged to Flume',
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      return c.json({ 
+        success: false, 
+        message: 'Failed to log user interaction to Flume',
+        error: logResult.error 
+      }, 500);
+    }
+  } catch (error) {
+    console.error('Error logging user interaction:', error);
+    return c.json({ 
+      success: false, 
+      message: 'Error logging user interaction',
       error: error.message 
     }, 500);
   }
