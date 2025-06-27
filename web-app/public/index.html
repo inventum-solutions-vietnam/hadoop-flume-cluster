@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flume Web App - User Interaction Logger</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95rem;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #4facfe;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 120px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(86, 171, 47, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4facfe;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .health-status {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+            border-left: 4px solid #4facfe;
+        }
+
+        .health-status h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .health-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .health-indicator.healthy {
+            background: #28a745;
+        }
+
+        .health-indicator.unhealthy {
+            background: #dc3545;
+        }
+
+        .health-indicator.unknown {
+            background: #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Flume Web App</h1>
+            <p>User Interaction Logger & Backend Logging</p>
+        </div>
+
+        <div class="content">
+            <form id="userForm">
+                <div class="form-group">
+                    <label for="name">Full Name *</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address *</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="action">Action Type *</label>
+                    <select id="action" name="action" required>
+                        <option value="">Select an action...</option>
+                        <option value="form_submit">Form Submission</option>
+                        <option value="button_click">Button Click</option>
+                        <option value="page_view">Page View</option>
+                        <option value="data_search">Data Search</option>
+                        <option value="file_upload">File Upload</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="message">Message/Description</label>
+                    <textarea id="message" name="message" placeholder="Describe what you're doing..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="priority">Priority Level</label>
+                    <select id="priority" name="priority">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                        <option value="critical">Critical</option>
+                    </select>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        <span class="loading" style="display: none;"></span>
+                        Submit Form
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="testLogBtn">
+                        <span class="loading" style="display: none;"></span>
+                        Test Backend Log
+                    </button>
+                    <button type="button" class="btn btn-success" id="healthCheckBtn">
+                        <span class="loading" style="display: none;"></span>
+                        Check Health
+                    </button>
+                </div>
+            </form>
+
+            <div id="status" class="status"></div>
+
+            <div class="health-status">
+                <h3>🔍 System Health</h3>
+                <div id="healthInfo">
+                    <span class="health-indicator unknown"></span>
+                    <span>Checking system status...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add user agent and timestamp to form data
+        function enrichFormData(formData) {
+            const data = {};
+            for (let [key, value] of formData.entries()) {
+                data[key] = value;
+            }
+            
+            data.userAgent = navigator.userAgent;
+            data.timestamp = new Date().toISOString();
+            data.pageUrl = window.location.href;
+            data.sessionId = sessionStorage.getItem('sessionId') || generateSessionId();
+            
+            // Store session ID for future requests
+            sessionStorage.setItem('sessionId', data.sessionId);
+            
+            return data;
+        }
+
+        function generateSessionId() {
+            return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        function showStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+            
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 5000);
+        }
+
+        function setLoading(button, loading) {
+            const loadingSpinner = button.querySelector('.loading');
+            if (loading) {
+                loadingSpinner.style.display = 'inline-block';
+                button.disabled = true;
+            } else {
+                loadingSpinner.style.display = 'none';
+                button.disabled = false;
+            }
+        }
+
+        // Form submission
+        document.getElementById('userForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            setLoading(submitBtn, true);
+            
+            try {
+                const formData = new FormData(e.target);
+                const data = enrichFormData(formData);
+                
+                const response = await fetch('/api/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showStatus('✅ Form submitted successfully and logged to Flume!', 'success');
+                    e.target.reset();
+                } else {
+                    showStatus(`❌ Error: ${result.message}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`❌ Network error: ${error.message}`, 'error');
+            } finally {
+                setLoading(submitBtn, false);
+            }
+        });
+
+        // Test backend log
+        document.getElementById('testLogBtn').addEventListener('click', async () => {
+            const testLogBtn = document.getElementById('testLogBtn');
+            setLoading(testLogBtn, true);
+            
+            try {
+                const response = await fetch('/api/test-log', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showStatus('✅ Test log sent successfully to Flume!', 'success');
+                } else {
+                    showStatus(`❌ Error: ${result.message}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`❌ Network error: ${error.message}`, 'error');
+            } finally {
+                setLoading(testLogBtn, false);
+            }
+        });
+
+        // Health check
+        document.getElementById('healthCheckBtn').addEventListener('click', async () => {
+            const healthCheckBtn = document.getElementById('healthCheckBtn');
+            setLoading(healthCheckBtn, true);
+            
+            try {
+                const response = await fetch('/api/health');
+                const result = await response.json();
+                
+                const healthInfo = document.getElementById('healthInfo');
+                const indicator = healthInfo.querySelector('.health-indicator');
+                
+                if (result.status === 'healthy') {
+                    indicator.className = 'health-indicator healthy';
+                    healthInfo.innerHTML = `
+                        <span class="health-indicator healthy"></span>
+                        <span>✅ System is healthy | Flume Agent: ${result.flumeAgent} | Last check: ${new Date().toLocaleTimeString()}</span>
+                    `;
+                } else {
+                    indicator.className = 'health-indicator unhealthy';
+                    healthInfo.innerHTML = `
+                        <span class="health-indicator unhealthy"></span>
+                        <span>❌ System unhealthy | Last check: ${new Date().toLocaleTimeString()}</span>
+                    `;
+                }
+            } catch (error) {
+                const healthInfo = document.getElementById('healthInfo');
+                healthInfo.innerHTML = `
+                    <span class="health-indicator unhealthy"></span>
+                    <span>❌ Health check failed: ${error.message}</span>
+                `;
+            } finally {
+                setLoading(healthCheckBtn, false);
+            }
+        });
+
+        // Auto health check on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('healthCheckBtn').click();
+            }, 1000);
+        });
+    </script>
+</body>
+</html> 

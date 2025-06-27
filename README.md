@@ -20,6 +20,7 @@ This is a completely modernized Hadoop cluster Docker setup featuring:
 - **Modern configuration** - Optimized for containerized environments
 - **Production-ready** - Health checks, logging, and monitoring support
 - **Apache Flume Integration** - HTTP source to HDFS sink for event aggregation
+- **Web Application** - Hono.js web app for user interaction logging
 
 ## 📊 Data Ingestion with Apache Flume
 
@@ -32,6 +33,52 @@ The cluster includes Apache Flume for real-time data ingestion:
 - **Automatic Partitioning** - Events organized by date/hour in HDFS
 
 For detailed Flume usage, see [FLUME_README.md](FLUME_README.md).
+
+## 🌐 Web Application for User Interaction Logging
+
+A modern Hono.js web application is included for capturing user interactions and backend logs:
+
+- **User Interaction Form** - Collect user data and interactions via web interface
+- **Backend Logging API** - Send application logs to Flume agent
+- **Health Monitoring** - Real-time system and Flume agent status
+- **Modern UI** - Beautiful, responsive interface with real-time feedback
+- **RESTful API** - Easy integration with other applications
+
+### Quick Start for Web App
+
+```bash
+# Navigate to web app directory
+cd web-app
+
+# Install dependencies and start
+./start.sh
+
+# Or manually
+npm install
+npm run dev
+```
+
+The web app will be available at `http://localhost:3000`
+
+### Web App Features
+
+- **Form Submission** - Capture user interactions with rich metadata
+- **Backend Logging** - Send structured logs to Flume agent
+- **Health Checks** - Monitor system and Flume agent connectivity
+- **Test Integration** - Verify Flume agent connectivity
+- **Session Tracking** - Automatic session ID generation and tracking
+
+### API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/` | GET | Web interface |
+| `/api/submit` | POST | Submit user interaction form |
+| `/api/log` | POST | Send backend log message |
+| `/api/test-log` | POST | Send test log to Flume |
+| `/api/health` | GET | Check system health |
+
+For detailed web app documentation, see [web-app/README.md](web-app/README.md).
 
 ## 📋 Prerequisites
 
