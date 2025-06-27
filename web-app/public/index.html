@@ -273,6 +273,111 @@
             color: #333;
             font-size: 1rem;
         }
+
+        .error-simulation {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+
+        .error-simulation h4 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .simulation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .simulation-category {
+            background: white;
+            padding: 8px;
+            border-radius: 5px;
+            border-left: 3px solid #4facfe;
+        }
+
+        .simulation-category h5 {
+            margin-bottom: 10px;
+            color: #666;
+            font-size: 0.8rem;
+        }
+
+        .custom-error-section {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background: white;
+            border-left: 4px solid #4facfe;
+        }
+
+        .custom-error-section h5 {
+            margin-bottom: 10px;
+            color: #666;
+            font-size: 0.8rem;
+        }
+
+        .form-control {
+            margin-bottom: 15px;
+        }
+
+        .form-control label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95rem;
+        }
+
+        .form-control input, .form-control textarea, .form-control select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .form-control input:focus, .form-control textarea:focus, .form-control select:focus {
+            outline: none;
+            border-color: #4facfe;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .form-control input.error, .form-control textarea.error, .form-control select.error {
+            border-color: #dc3545;
+            background: #fff5f5;
+        }
+
+        .form-control textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #f5c6cb 100%);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(219, 70, 85, 0.3);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #ffeeba 100%);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 193, 12, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -369,6 +474,95 @@
                         <div class="stat-label">Focus Events</div>
                         <div class="stat-value" id="focus-events">0</div>
                     </div>
+                </div>
+            </div>
+
+            <div class="error-simulation">
+                <h4>🚨 Error Simulation & Backend Logging</h4>
+                <div class="simulation-grid">
+                    <div class="simulation-category">
+                        <h5>Database Errors</h5>
+                        <button class="btn btn-danger" onclick="simulateError('database_connection_failed')">
+                            Database Connection Failed
+                        </button>
+                        <button class="btn btn-danger" onclick="simulateError('database_timeout')">
+                            Database Timeout
+                        </button>
+                        <button class="btn btn-danger" onclick="simulateError('database_deadlock')">
+                            Database Deadlock
+                        </button>
+                    </div>
+                    
+                    <div class="simulation-category">
+                        <h5>API Errors</h5>
+                        <button class="btn btn-warning" onclick="simulateError('api_rate_limit')">
+                            API Rate Limit Exceeded
+                        </button>
+                        <button class="btn btn-warning" onclick="simulateError('api_authentication_failed')">
+                            API Authentication Failed
+                        </button>
+                        <button class="btn btn-warning" onclick="simulateError('api_timeout')">
+                            API Request Timeout
+                        </button>
+                    </div>
+                    
+                    <div class="simulation-category">
+                        <h5>System Errors</h5>
+                        <button class="btn btn-danger" onclick="simulateError('memory_overflow')">
+                            Memory Overflow
+                        </button>
+                        <button class="btn btn-danger" onclick="simulateError('disk_space_full')">
+                            Disk Space Full
+                        </button>
+                        <button class="btn btn-danger" onclick="simulateError('service_unavailable')">
+                            Service Unavailable
+                        </button>
+                    </div>
+                    
+                    <div class="simulation-category">
+                        <h5>Application Errors</h5>
+                        <button class="btn btn-warning" onclick="simulateError('validation_error')">
+                            Data Validation Error
+                        </button>
+                        <button class="btn btn-warning" onclick="simulateError('business_logic_error')">
+                            Business Logic Error
+                        </button>
+                        <button class="btn btn-warning" onclick="simulateError('configuration_error')">
+                            Configuration Error
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="custom-error-section">
+                    <h5>🔧 Custom Error Log</h5>
+                    <div class="form-group">
+                        <label for="customErrorLevel">Log Level</label>
+                        <select id="customErrorLevel" class="form-control">
+                            <option value="DEBUG">DEBUG</option>
+                            <option value="INFO">INFO</option>
+                            <option value="WARN">WARN</option>
+                            <option value="ERROR">ERROR</option>
+                            <option value="FATAL">FATAL</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="customErrorMessage">Error Message</label>
+                        <input type="text" id="customErrorMessage" class="form-control" 
+                               placeholder="Enter custom error message..." value="Custom error simulation">
+                    </div>
+                    <div class="form-group">
+                        <label for="customErrorComponent">Component</label>
+                        <input type="text" id="customErrorComponent" class="form-control" 
+                               placeholder="e.g., database, api, auth" value="error-simulator">
+                    </div>
+                    <div class="form-group">
+                        <label for="customErrorDetails">Additional Details (JSON)</label>
+                        <textarea id="customErrorDetails" class="form-control" rows="3" 
+                                  placeholder='{"errorCode": "CUSTOM001", "userId": "123", "timestamp": "2024-01-15T10:30:00Z"}'>{"errorCode": "CUSTOM001", "simulated": true, "timestamp": "2024-01-15T10:30:00Z"}</textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="sendCustomError()">
+                        Send Custom Error Log
+                    </button>
                 </div>
             </div>
 
@@ -827,6 +1021,300 @@
                 document.getElementById('healthCheckBtn').click();
             }, 1000);
         });
+
+        // Error simulation functions
+        const errorScenarios = {
+            database_connection_failed: {
+                level: 'ERROR',
+                message: 'Database connection failed: Connection refused to localhost:5432',
+                component: 'database',
+                details: {
+                    errorCode: 'DB001',
+                    errorType: 'ConnectionError',
+                    host: 'localhost',
+                    port: 5432,
+                    retryAttempts: 3,
+                    simulated: true
+                }
+            },
+            database_timeout: {
+                level: 'ERROR',
+                message: 'Database query timeout after 30 seconds',
+                component: 'database',
+                details: {
+                    errorCode: 'DB002',
+                    errorType: 'TimeoutError',
+                    query: 'SELECT * FROM users WHERE status = "active"',
+                    timeout: 30000,
+                    simulated: true
+                }
+            },
+            database_deadlock: {
+                level: 'ERROR',
+                message: 'Database deadlock detected in transaction',
+                component: 'database',
+                details: {
+                    errorCode: 'DB003',
+                    errorType: 'DeadlockError',
+                    transactionId: 'txn_12345',
+                    conflictingTransactions: ['txn_67890', 'txn_11111'],
+                    simulated: true
+                }
+            },
+            api_rate_limit: {
+                level: 'WARN',
+                message: 'API rate limit exceeded: 100 requests per minute',
+                component: 'api',
+                details: {
+                    errorCode: 'API001',
+                    errorType: 'RateLimitError',
+                    limit: 100,
+                    window: '1 minute',
+                    retryAfter: 60,
+                    simulated: true
+                }
+            },
+            api_authentication_failed: {
+                level: 'ERROR',
+                message: 'API authentication failed: Invalid API key',
+                component: 'api',
+                details: {
+                    errorCode: 'API002',
+                    errorType: 'AuthenticationError',
+                    apiKey: 'sk_***invalid***',
+                    endpoint: '/api/v1/users',
+                    simulated: true
+                }
+            },
+            api_timeout: {
+                level: 'ERROR',
+                message: 'API request timeout after 10 seconds',
+                component: 'api',
+                details: {
+                    errorCode: 'API003',
+                    errorType: 'TimeoutError',
+                    endpoint: '/api/v1/external-service',
+                    timeout: 10000,
+                    simulated: true
+                }
+            },
+            memory_overflow: {
+                level: 'FATAL',
+                message: 'Memory overflow detected: Heap size exceeded 2GB limit',
+                component: 'system',
+                details: {
+                    errorCode: 'SYS001',
+                    errorType: 'MemoryError',
+                    heapSize: '2.1GB',
+                    limit: '2GB',
+                    processId: 12345,
+                    simulated: true
+                }
+            },
+            disk_space_full: {
+                level: 'ERROR',
+                message: 'Disk space full: Only 50MB available on /var/log',
+                component: 'system',
+                details: {
+                    errorCode: 'SYS002',
+                    errorType: 'DiskSpaceError',
+                    path: '/var/log',
+                    available: '50MB',
+                    required: '100MB',
+                    simulated: true
+                }
+            },
+            service_unavailable: {
+                level: 'ERROR',
+                message: 'Service unavailable: Payment gateway is down',
+                component: 'service',
+                details: {
+                    errorCode: 'SVC001',
+                    errorType: 'ServiceUnavailableError',
+                    service: 'payment-gateway',
+                    status: 'down',
+                    lastCheck: new Date().toISOString(),
+                    simulated: true
+                }
+            },
+            validation_error: {
+                level: 'WARN',
+                message: 'Data validation error: Invalid email format',
+                component: 'validation',
+                details: {
+                    errorCode: 'VAL001',
+                    errorType: 'ValidationError',
+                    field: 'email',
+                    value: 'invalid-email',
+                    rule: 'email_format',
+                    simulated: true
+                }
+            },
+            business_logic_error: {
+                level: 'ERROR',
+                message: 'Business logic error: Insufficient funds for transaction',
+                component: 'business',
+                details: {
+                    errorCode: 'BUS001',
+                    errorType: 'BusinessLogicError',
+                    userId: 'user_123',
+                    accountBalance: 50.00,
+                    transactionAmount: 100.00,
+                    simulated: true
+                }
+            },
+            configuration_error: {
+                level: 'ERROR',
+                message: 'Configuration error: Missing required environment variable',
+                component: 'config',
+                details: {
+                    errorCode: 'CFG001',
+                    errorType: 'ConfigurationError',
+                    missingVar: 'DATABASE_URL',
+                    configFile: 'config/database.yml',
+                    simulated: true
+                }
+            }
+        };
+
+        async function simulateError(errorType) {
+            const scenario = errorScenarios[errorType];
+            if (!scenario) {
+                showStatus('❌ Unknown error type', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/log', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        level: scenario.level,
+                        message: scenario.message,
+                        component: scenario.component,
+                        details: {
+                            ...scenario.details,
+                            timestamp: new Date().toISOString(),
+                            sessionId: tracker.sessionId,
+                            userAgent: navigator.userAgent
+                        }
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showStatus(`✅ ${scenario.level} log sent: ${scenario.message}`, 'success');
+                } else {
+                    showStatus(`❌ Failed to send ${scenario.level} log: ${result.message}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`❌ Error sending log: ${error.message}`, 'error');
+            }
+        }
+
+        async function sendCustomError() {
+            const level = document.getElementById('customErrorLevel').value;
+            const message = document.getElementById('customErrorMessage').value;
+            const component = document.getElementById('customErrorComponent').value;
+            const detailsText = document.getElementById('customErrorDetails').value;
+
+            if (!message.trim()) {
+                showStatus('❌ Error message is required', 'error');
+                return;
+            }
+
+            let details = {};
+            try {
+                if (detailsText.trim()) {
+                    details = JSON.parse(detailsText);
+                }
+            } catch (error) {
+                showStatus('❌ Invalid JSON in details field', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/log', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        level: level,
+                        message: message,
+                        component: component,
+                        details: {
+                            ...details,
+                            timestamp: new Date().toISOString(),
+                            sessionId: tracker.sessionId,
+                            userAgent: navigator.userAgent,
+                            custom: true
+                        }
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showStatus(`✅ ${level} log sent: ${message}`, 'success');
+                } else {
+                    showStatus(`❌ Failed to send ${level} log: ${result.message}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`❌ Error sending log: ${error.message}`, 'error');
+            }
+        }
+
+        // Add some CSS for the new buttons
+        const style = document.createElement('style');
+        style.textContent = `
+            .btn-danger {
+                background: linear-gradient(135deg, #dc3545 0%, #f5c6cb 100%);
+                color: white;
+                margin-bottom: 5px;
+                width: 100%;
+            }
+            
+            .btn-warning {
+                background: linear-gradient(135deg, #ffc107 0%, #ffeeba 100%);
+                color: white;
+                margin-bottom: 5px;
+                width: 100%;
+            }
+            
+            .form-control {
+                margin-bottom: 15px;
+            }
+            
+            .form-control label {
+                display: block;
+                margin-bottom: 8px;
+                font-weight: 600;
+                color: #333;
+                font-size: 0.95rem;
+            }
+            
+            .form-control input, .form-control textarea, .form-control select {
+                width: 100%;
+                padding: 12px 16px;
+                border: 2px solid #e1e5e9;
+                border-radius: 10px;
+                font-size: 1rem;
+                transition: all 0.3s ease;
+                background: #f8f9fa;
+            }
+            
+            .form-control input:focus, .form-control textarea:focus, .form-control select:focus {
+                outline: none;
+                border-color: #4facfe;
+                background: white;
+                box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html> 
