@@ -3,8 +3,17 @@
 # Script to view and decode Flume events from HDFS
 # Usage: ./view-flume-events.sh [date] [hour]
 
-DATE=${1:-$(date +%Y-%m-%d)}
-HOUR=${2:-$(date +%H)}
+# If no arguments, use current UTC date and hour
+if [ -z "$1" ]; then
+  DATE=$(date -u +%Y-%m-%d)
+else
+  DATE=$1
+fi
+if [ -z "$2" ]; then
+  HOUR=$(date -u +%H)
+else
+  HOUR=$2
+fi
 
 echo "=== Viewing Flume Events for $DATE/$HOUR ==="
 
